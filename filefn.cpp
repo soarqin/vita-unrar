@@ -1,5 +1,15 @@
 #include "rar.hpp"
 
+#ifdef _UNIX
+#ifdef __vita__
+#elif defined(_ANDROID)
+#include <sys/vfs.h>
+#define statvfs statfs
+#else
+#include <sys/statvfs.h>
+#endif
+#endif
+
 MKDIR_CODE MakeDir(const wchar *Name,bool SetAttr,uint Attr)
 {
 #ifdef _WIN_ALL
@@ -28,7 +38,11 @@ MKDIR_CODE MakeDir(const wchar *Name,bool SetAttr,uint Attr)
   char NameA[NM];
   WideToChar(Name,NameA,ASIZE(NameA));
   mode_t uattr=SetAttr ? (mode_t)Attr:0777;
+#ifdef __vita__
+  int ErrCode=sceIoMkdir(NameA,uattr);
+#else
   int ErrCode=mkdir(NameA,uattr);
+#endif
 #ifdef _ANDROID
   if (ErrCode==-1 && errno!=ENOENT)
     ErrCode=JniMkdir(Name) ? 0 : -1;  // If external card is read-only for usual file API.
@@ -162,7 +176,7 @@ int64 GetFreeDisk(const wchar *Name)
       uiUserFree.u.HighPart<=uiTotalFree.u.HighPart)
     return INT32TO64(uiUserFree.u.HighPart,uiUserFree.u.LowPart);
   return 0;
-#elif defined(_UNIX)
+#elif defined(_UNIX) && !defined(__vita__)
   wchar Root[NM];
   GetFilePath(Name,Root,ASIZE(Root));
   char RootA[NM];
@@ -274,7 +288,7 @@ void PrepareToDelete(const wchar *Name)
 #if defined(_WIN_ALL) || defined(_EMX)
   SetFileAttr(Name,0);
 #endif
-#ifdef _UNIX
+#if defined(_UNIX) && !defined(__vita__)
   if (Name!=NULL)
   {
     char NameA[NM];
@@ -318,7 +332,7 @@ bool SetFileAttr(const wchar *Name,uint Attr)
       Success=SetFileAttributes(LongName,Attr)!=0;
   }
   return Success;
-#elif defined(_UNIX)
+#elif defined(_UNIX) && !defined(__vita__)
   char NameA[NM];
   WideToChar(Name,NameA,ASIZE(NameA));
   return chmod(NameA,(mode_t)Attr)==0;

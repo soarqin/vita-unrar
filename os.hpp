@@ -128,7 +128,7 @@
 #if defined(RAR_SMP) && defined(__APPLE__)
   #include <sys/sysctl.h>
 #endif
-#ifndef SFX_MODULE
+#if !defined(SFX_MODULE) && !defined(__vita__)
   #ifdef _ANDROID
     #include <sys/vfs.h>
     #define statvfs statfs
@@ -149,14 +149,13 @@
 #include <ctype.h>
 #include <fcntl.h>
 #include <errno.h>
-#include <dirent.h>
 #include <time.h>
 #include <signal.h>
 #include <utime.h>
 #include <locale.h>
 
 
-#ifdef  S_IFLNK
+#if defined(S_IFLNK) && !defined(__vita__)
 #define SAVE_LINKS
 #endif
 
@@ -184,6 +183,10 @@
 
 #define _stdfunction 
 #define _forceinline inline
+
+#ifdef __vita__
+#define LITTLE_ENDIAN
+#endif
 
 #ifdef _APPLE
   #if defined(__BIG_ENDIAN__) && !defined(BIG_ENDIAN)

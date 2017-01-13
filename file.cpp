@@ -99,7 +99,7 @@ bool File::Open(const wchar *Name,uint Mode)
   WideToChar(Name,NameA,ASIZE(NameA));
 
   int handle=open(NameA,flags);
-#ifdef LOCK_EX
+#if defined(LOCK_EX) && !defined(__vita__)
 
 #ifdef _OSF_SOURCE
   extern "C" int flock(int, int);
@@ -247,7 +247,8 @@ bool File::Close()
         Success=CloseHandle(hFile)==TRUE;
 #else
 #ifdef FILE_USE_OPEN
-      Success=close(hFile)!=-1;
+      if (HandleType!=FILE_HANDLESTD)
+        Success=close(hFile)!=-1;
 #else
       Success=fclose(hFile)!=EOF;
 #endif
@@ -302,9 +303,9 @@ bool File::Write(const void *Data,size_t Size)
     if (hFile==FILE_BAD_HANDLE)
     {
 #ifdef FILE_USE_OPEN
-      hFile=dup(STDOUT_FILENO); // Open new stdout stream.
+      hFile=STDOUT_FILENO; // Open new stdout stream.
 #else
-      hFile=fdopen(dup(STDOUT_FILENO),"w"); // Open new stdout stream.
+      hFile=fdopen(STDOUT_FILENO,"w"); // Open new stdout stream.
 #endif
     }
 #endif
@@ -574,9 +575,10 @@ bool File::Truncate()
 {
 #ifdef _WIN_ALL
   return SetEndOfFile(hFile)==TRUE;
-#else
+#elif !defined(__vita__)
   return ftruncate(GetFD(),(off_t)Tell())==0;
 #endif
+  return true;
 }
 
 
@@ -627,7 +629,7 @@ void File::SetCloseFileTime(RarTime *ftm,RarTime *fta)
 
 void File::SetCloseFileTimeByName(const wchar *Name,RarTime *ftm,RarTime *fta)
 {
-#ifdef _UNIX
+#if defined(_UNIX) && !defined(__vita__)
   bool setm=ftm!=NULL && ftm->IsSet();
   bool seta=fta!=NULL && fta->IsSet();
   if (setm || seta)

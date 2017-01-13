@@ -2,6 +2,7 @@
 
 void ExtractUnixOwner20(Archive &Arc,const wchar *FileName)
 {
+#ifndef __vita__
   char NameA[NM];
   WideToChar(FileName,NameA,ASIZE(NameA));
 
@@ -44,11 +45,13 @@ void ExtractUnixOwner20(Archive &Arc,const wchar *FileName)
     ErrHandler.SetErrorCode(RARX_CREATE);
   }
   SetFileAttr(FileName,Attr);
+#endif
 }
 
 
 void ExtractUnixOwner30(Archive &Arc,const wchar *FileName)
 {
+#ifndef __vita__
   char NameA[NM];
   WideToChar(FileName,NameA,ASIZE(NameA));
 
@@ -87,11 +90,13 @@ void ExtractUnixOwner30(Archive &Arc,const wchar *FileName)
     ErrHandler.SetErrorCode(RARX_CREATE);
   }
   SetFileAttr(FileName,Attr);
+#endif
 }
 
 
 void SetUnixOwner(Archive &Arc,const wchar *FileName)
 {
+#ifndef __vita__
   char NameA[NM];
   WideToChar(FileName,NameA,ASIZE(NameA));
 
@@ -138,4 +143,5 @@ void SetUnixOwner(Archive &Arc,const wchar *FileName)
     uiMsg(UIERROR_UOWNERSET,Arc.FileName,FileName);
     ErrHandler.SetErrorCode(RARX_CREATE);
   }
+#endif
 }

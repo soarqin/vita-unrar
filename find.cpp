@@ -6,6 +6,8 @@ FindFile::FindFile()
   FirstCall=true;
 #ifdef _WIN_ALL
   hFind=INVALID_HANDLE_VALUE;
+#elif defined(__vita__)
+  dirid = 0;
 #else
   dirp=NULL;
 #endif
@@ -17,6 +19,11 @@ FindFile::~FindFile()
 #ifdef _WIN_ALL
   if (hFind!=INVALID_HANDLE_VALUE)
     FindClose(hFind);
+#elif defined(__vita__)
+  if (dirid > 0) {
+    sceIoDclose(dirid);
+    dirid = 0;
+  }
 #else
   if (dirp!=NULL)
     closedir(dirp);
@@ -55,15 +62,30 @@ bool FindFile::Next(FindData *fd,bool GetSymLink)
       wcscpy(DirName,L".");
     char DirNameA[NM];
     WideToChar(DirName,DirNameA,ASIZE(DirNameA));
+#ifdef __vita__
+    if ((dirid=sceIoDopen(DirNameA))<0)
+    {
+      fd->Error=true;
+      return false;
+    }
+#else
     if ((dirp=opendir(DirNameA))==NULL)
     {
       fd->Error=(errno!=ENOENT);
       return false;
     }
+#endif
   }
   while (1)
   {
+#ifdef __vita__
+    struct SceIoDirent entry;
+    struct SceIoDirent *ent = NULL;
+    if(sceIoDread(dirid, &entry) > 0)
+      ent = &entry;
+#else
     struct dirent *ent=readdir(dirp);
+#endif
     if (ent==NULL)
       return false;
     if (strcmp(ent->d_name,".")==0 || strcmp(ent->d_name,"..")==0)

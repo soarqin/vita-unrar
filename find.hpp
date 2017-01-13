@@ -1,6 +1,14 @@
 #ifndef _RAR_FINDDATA_
 #define _RAR_FINDDATA_
 
+#ifdef _UNIX
+#ifdef __vita__
+#include <psp2/io/dirent.h>
+#else
+#include <dirent.h>
+#endif
+#endif
+
 enum FINDDATA_FLAGS {
   FDDF_SECONDDIR=1  // Second encounter of same directory in SCAN_GETDIRSTWICE ScanTree mode.
 };
@@ -35,6 +43,8 @@ class FindFile
     bool FirstCall;
 #ifdef _WIN_ALL
     HANDLE hFind;
+#elif defined(__vita__)
+    int dirid;
 #else
     DIR *dirp;
 #endif

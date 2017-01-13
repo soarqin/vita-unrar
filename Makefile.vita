@@ -1,0 +1,26 @@
+TARGET    = libunrar.a
+OBJS      = archive.o arcread.o blake2s.o cmddata.o consio.o crc.o crypt.o \
+			dll.o encname.o errhnd.o extinfo.o extract.o filcreat.o file.o \
+			filefn.o filestr.o find.o getbits.o global.o hash.o headers.o \
+			isnt.o match.o options.o pathfn.o qopen.o rar.o rarpch.o rarvm.o \
+			rawread.o rdwrfn.o rijndael.o rs.o rs16.o scantree.o secpassword.o \
+			sha1.o sha256.o smallfn.o strfn.o strlist.o system.o threadpool.o \
+			timefn.o ui.o unicode.o unpack.o volume.o
+
+PREFIX   = arm-vita-eabi
+CC       = $(PREFIX)-gcc
+CXX      = $(PREFIX)-g++
+AR       = $(PREFIX)-ar
+CFLAGS   = -Wl,-q -Wall -O3 -Wno-unused-variable -Wno-unused-but-set-variable -ffat-lto-objects -flto -DRARDLL -DUNRAR -DSILENT
+CXXFLAGS = $(CFLAGS) -std=gnu++11 -fno-rtti
+
+.PHONY: all clean
+
+all: $(TARGET)
+
+$(TARGET): $(OBJS)
+	$(AR) rcu $@ $^
+	
+clean:
+	@rm -rf $(TARGET) $(OBJS)
+	@echo "Cleaned up!"
